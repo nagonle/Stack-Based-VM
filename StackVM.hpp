@@ -1,55 +1,8 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include "Bytecodes.hpp"
 using namespace std;
-
-//class bytecodes {
-int const HALT = 0;
-int const ICONST = 1;
-int const PRINT = 2;
-int const GSTORE = 3; 
-int const GLOAD = 4; 
-int const IADD = 5;
-int const BR = 6;
-int const BRT = 7;
-int const ILT = 8;
-
-string opcodes[] = {"HALT", "ICONST", "PRINT", "GSTORE", "GLOAD", "IADD", "BR", "BRT", "ILT"};
-//};
-
-class Instructions {
-	string name;
-	int nOpnds = 0;
-		public:
-	Instructions(string name_) {
-		name = name_;
-	}
-
-	Instructions(string name_, int nOpnds_) {
-		name = name_;
-		nOpnds = nOpnds_;
-	}
-
-	string get_name() {
-			return name;
-	}
-
-	int get_nOpnds() {
-		return nOpnds;
-	}
-};
-
-Instructions instr[] = {
-		{"HALT"},
-		{"ICONST", 1},
-		{"PRINT", -1},
-		{"GSTORE", 1},
-		{"GLOAD", 1},
-		{"IADD"},
-		{"BR", 1},
-		{"BRT", 1},
-		{"ILT"}
-};
 
 class VM {
 	// data: is data memory or global memory. the size is passed to the constructor.
@@ -175,7 +128,7 @@ class VM {
 			char * out = (char*)malloc(sizeof(char)*40);
 			char aux[10] = "";
 			Instructions inst = instr[opcode];
-			sprintf(out, "%04d: [%d] %-7s ", ip, opcode, opcodes[opcode].c_str());
+			sprintf(out, "%04d: [%d] %-7s ", ip, opcode, instr[opcode].get_name().c_str());
 			if (inst.get_nOpnds() == 1)
 					sprintf(aux, "%d", code[ip+1]);
 			else if (inst.get_nOpnds() == 2)
@@ -190,59 +143,3 @@ class VM {
 };
 
 
-int main(int argc, char * argv[]) {
-	// Pending: align string output, setting width of every segment.
-	int program0[] = { // use 0 datamemory.
-		ICONST, 99,
-		PRINT,
-		HALT
-	};
-	int program1[] = { // use 1 datamemory.
-		ICONST, 99,
-		GSTORE, 0,
-		GLOAD, 0,
-		PRINT,
-		HALT
-	};
-	int fibonacci[] = { // use 5 datamemory.
-		ICONST, 1,
-		GSTORE, 0,
-		ICONST, 1,
-		GSTORE, 1,
-		ICONST, 0,
-		GSTORE, 2,
-		ICONST, 0,
-		GSTORE, 3,
-		ICONST, 12, // fib limit.
-		GSTORE, 4,
-		ICONST, 1,
-		PRINT,
-		ICONST, 1,
-		PRINT,
-		GLOAD, 0,
-		GLOAD, 1,
-		IADD,
-		GSTORE, 2,
-		GLOAD, 2,
-		PRINT,
-		GLOAD, 1,
-		GSTORE, 0,
-		GLOAD, 2,
-		GSTORE, 1,
-		ICONST, 1,
-		GLOAD, 3,
-		IADD,
-		GSTORE, 3,
-		GLOAD, 4,
-		GLOAD, 3,
-		ILT,
-		BRT, 26,
-		HALT
-	};
-	VM vm(fibonacci, 0, 5);
-	if (argc == 2) {
-		if (strcmp(argv[1], "trace") == 0) vm.trace = true;
-	}
-	vm.cpu();
-	return 0;
-}
